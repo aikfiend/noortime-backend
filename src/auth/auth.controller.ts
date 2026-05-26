@@ -33,11 +33,10 @@ export class AuthController {
   ): void {
     passport.authenticate(
       'google',
-      (err: Error | null, user: unknown, info: { message?: string } | { message?: string }[] | undefined) => {
+      (err: Error | null, user: unknown, info: { message?: string } | undefined) => {
         if (err || !user) {
-          const infoMessage = Array.isArray(info) ? info[0]?.message : info?.message;
           const reason = encodeURIComponent(
-            infoMessage ?? err?.message ?? 'auth_failed',
+            info?.message ?? err?.message ?? 'auth_failed',
           );
           return res.redirect(
             `${process.env.FRONTEND_URL}/auth/error?reason=${reason}`,

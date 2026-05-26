@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
+import { Strategy, Profile } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
+import { User } from '../users/users.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -14,33 +15,28 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
+  // NestJS's PassportStrategy wrapper calls done() after this resolves.
+  // Do NOT call done() here — return the user (or throw) and let the wrapper do it.
   async validate(
     _accessToken: string,
     _refreshToken: string,
     profile: Profile,
-    done: VerifyCallback,
-  ): Promise<void> {
-    try {
-      const email = profile.emails?.[0]?.value;
-      if (!email) {
-        return done(null, false, { message: 'no_email' });
-      }
-
-      const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN ?? 'clips4sale.com';
-      if (!email.endsWith(`@${allowedDomain}`)) {
-        return done(null, false, { message: 'domain_not_allowed' });
-      }
-
-      const user = await this.authService.findOrCreateUser({
-        googleId: profile.id,
-        email,
-        name: profile.displayName,
-        avatarUrl: profile.photos?.[0]?.value ?? null,
-      });
-
-      done(null, user);
-    } catch (err) {
-      done(err as Error, undefined);
+  ): Promise<User> {
+    const email = profile.emails?.[0]?.value;
+    if (!email) {
+      throw new Error('no_email');
     }
+
+    const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN ?? 'clips4sale.com';
+    if (!email.endsWith(`@${allowedDomain}`)) {
+      throw new Error('domain_not_allowed');
+    }
+
+    return this.authService.findOrCreateUser({
+      googleId: profile.id,
+      email,
+      name: profile.displayName,
+      avatarUrl: profile.photos?.[0]?.value ?? null,
+    });
   }
 }
