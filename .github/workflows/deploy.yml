@@ -10,16 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install & build
-        run: |
-          npm ci
-          npm run build
-
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -28,8 +18,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd ~/noortime-backend
+            cd /services/backend
             git pull origin main
-            npm ci --omit=dev
+            npm ci
             npm run build
-            pm2 restart noortime-backend || pm2 start dist/main.js --name noortime-backend
+            pm2 restart noortime-backend
