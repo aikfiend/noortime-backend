@@ -9,7 +9,8 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import passport from 'passport';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const passport = require('passport') as typeof import('passport');
 import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
 import { User } from '../users/users.service';
