@@ -23,7 +23,8 @@ jobs:
           script: |
             set -e
             cd /services/backend
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             rm -rf node_modules
             npm ci
             npm run build
