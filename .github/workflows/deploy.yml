@@ -27,4 +27,6 @@ jobs:
             rm -rf node_modules
             npm ci
             npm run build
-            pm2 restart noortime-backend
+            pm2 delete noortime-backend || true
+            pm2 start ecosystem.config.cjs
+            pm2 save
