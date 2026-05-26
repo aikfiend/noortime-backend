@@ -71,7 +71,7 @@ export class UsersService {
 
   async upsertLocation(
     userId: number,
-    data: Omit<UserLocation, 'user_id'>,
+    data: { city?: string | null; country?: string | null; latitude: number; longitude: number; timezone: string },
   ): Promise<UserLocation> {
     await this.db.execute(
       `INSERT INTO user_locations (user_id, city, country, latitude, longitude, timezone)

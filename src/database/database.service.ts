@@ -36,7 +36,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     sql: string,
     params?: unknown[],
   ): Promise<T[]> {
-    const [rows] = await this.pool.execute<RowDataPacket[]>(sql, params ?? []);
+    const [rows] = await this.pool.execute<RowDataPacket[]>(sql, (params ?? []) as any[]);
     return rows as unknown as T[];
   }
 
@@ -51,7 +51,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   /** INSERT / UPDATE / DELETE */
   async execute(sql: string, params?: unknown[]): Promise<ExecuteResult> {
-    const [result] = await this.pool.execute<ResultSetHeader>(sql, params ?? []);
+    const [result] = await this.pool.execute<ResultSetHeader>(sql, (params ?? []) as any[]);
     return { insertId: result.insertId, affectedRows: result.affectedRows };
   }
 

@@ -4,7 +4,7 @@ import { DatabaseService } from '../database/database.service';
 const TRACKABLE_PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const;
 type TrackablePrayer = (typeof TRACKABLE_PRAYERS)[number];
 
-interface PrayerMark {
+export interface PrayerMark {
   prayer_date: string;
   prayer_name: TrackablePrayer;
   completed_at: string;
