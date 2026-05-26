@@ -45,9 +45,10 @@ export class AuthController {
 
         req.logIn(user, (loginErr: Error | null) => {
           if (loginErr) {
-            return res.redirect(
+            res.redirect(
               `${process.env.FRONTEND_URL}/auth/error?reason=login_failed`,
             );
+            return;
           }
           res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
         });
