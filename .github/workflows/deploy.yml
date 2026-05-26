@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,6 +24,7 @@ jobs:
             set -e
             cd /services/backend
             git pull origin main
+            rm -rf node_modules
             npm ci
             npm run build
             pm2 restart noortime-backend
