@@ -50,7 +50,7 @@ export class MosquesService {
           'addr:housenumber'?: string;
         };
       }>;
-    }>('https://overpass-api.de/api/interpreter', query, {
+    }>('https://overpass.kumi.systems/api/interpreter', query, {
       headers: { 'Content-Type': 'text/plain' },
       timeout: 25_000,
     });
