@@ -22,16 +22,30 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Round coords to ~1km grid so nearby searches share a cache entry
+function cacheKey(lat: number, lng: number, radiusM: number): string {
+  return `${lat.toFixed(2)},${lng.toFixed(2)},${radiusM}`;
+}
+
+const TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 @Injectable()
 export class MosquesService {
+  private readonly cache = new Map<string, { ts: number; data: Mosque[] }>();
+
   async findNearby(latitude: number, longitude: number, radiusM = 5000): Promise<Mosque[]> {
-    const radiusM_ = radiusM;
+    const key = cacheKey(latitude, longitude, radiusM);
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.ts < TTL_MS) {
+      return cached.data;
+    }
+
     const query = `
       [out:json][timeout:20];
       (
-        node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM_},${latitude},${longitude});
-        way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM_},${latitude},${longitude});
-        relation["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM_},${latitude},${longitude});
+        node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${latitude},${longitude});
+        way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${latitude},${longitude});
+        relation["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${latitude},${longitude});
       );
       out center;
     `;
@@ -51,11 +65,14 @@ export class MosquesService {
         };
       }>;
     }>('https://overpass.kumi.systems/api/interpreter', query, {
-      headers: { 'Content-Type': 'text/plain' },
+      headers: {
+        'Content-Type': 'text/plain',
+        'User-Agent': 'NoorTime/1.0 (https://noortime.fiend.services)',
+      },
       timeout: 25_000,
     });
 
-    return data.elements
+    const mosques = data.elements
       .map((el) => {
         const elLat = el.lat ?? el.center?.lat;
         const elLng = el.lon ?? el.center?.lon;
@@ -78,5 +95,8 @@ export class MosquesService {
       })
       .filter((m): m is Mosque => m !== null)
       .sort((a, b) => a.distance - b.distance);
+
+    this.cache.set(key, { ts: Date.now(), data: mosques });
+    return mosques;
   }
 }
