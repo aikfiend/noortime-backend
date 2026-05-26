@@ -10,8 +10,8 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '512M',
-      error_file: '/var/log/services/backend/error.log',
-      out_file: '/var/log/services/backend/out.log',
+      error_file: '/var/log/services/noortime-backend/error.log',
+      out_file: '/var/log/services/noortime-backend/out.log',
       merge_logs: true,
       env: {
         NODE_ENV: 'production',

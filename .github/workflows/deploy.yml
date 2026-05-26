@@ -22,7 +22,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /services/backend
+            cd /services/noortime-backend
             git fetch origin main
             git reset --hard origin/main
             rm -rf node_modules
