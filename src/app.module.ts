@@ -6,6 +6,7 @@ import { PrayersModule } from './prayers/prayers.module';
 import { StreaksModule } from './streaks/streaks.module';
 import { MosquesModule } from './mosques/mosques.module';
 import { QiblaModule } from './qibla/qibla.module';
+import { HolidaysModule } from './holidays/holidays.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { QiblaModule } from './qibla/qibla.module';
     StreaksModule,
     MosquesModule,
     QiblaModule,
+    HolidaysModule,
   ],
 })
 export class AppModule {}
