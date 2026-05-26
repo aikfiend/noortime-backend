@@ -27,7 +27,31 @@ function cacheKey(lat: number, lng: number, radiusM: number): string {
   return `${lat.toFixed(2)},${lng.toFixed(2)},${radiusM}`;
 }
 
+// Mirrors tried in order; first to respond wins. AWS blocks some mirrors
+// intermittently so the fallback chain keeps the feature alive.
+const OVERPASS_MIRRORS = [
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+];
+
 const TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+type OverpassResponse = {
+  elements: Array<{
+    id: number;
+    lat?: number;
+    lon?: number;
+    center?: { lat: number; lon: number };
+    tags?: {
+      name?: string;
+      'name:en'?: string;
+      'addr:street'?: string;
+      'addr:city'?: string;
+      'addr:housenumber'?: string;
+    };
+  }>;
+};
 
 @Injectable()
 export class MosquesService {
@@ -50,27 +74,28 @@ export class MosquesService {
       out center;
     `;
 
-    const { data } = await axios.post<{
-      elements: Array<{
-        id: number;
-        lat?: number;
-        lon?: number;
-        center?: { lat: number; lon: number };
-        tags?: {
-          name?: string;
-          'name:en'?: string;
-          'addr:street'?: string;
-          'addr:city'?: string;
-          'addr:housenumber'?: string;
-        };
-      }>;
-    }>('https://overpass.kumi.systems/api/interpreter', query, {
-      headers: {
-        'Content-Type': 'text/plain',
-        'User-Agent': 'NoorTime/1.0 (https://noortime.fiend.services)',
-      },
-      timeout: 25_000,
-    });
+    const headers = {
+      'Content-Type': 'text/plain',
+      'User-Agent': 'NoorTime/1.0 (https://noortime.fiend.services)',
+    };
+
+    let data: OverpassResponse | null = null;
+    for (const mirror of OVERPASS_MIRRORS) {
+      try {
+        const res = await axios.post<OverpassResponse>(mirror, query, {
+          headers,
+          timeout: 10_000,
+        });
+        data = res.data;
+        break;
+      } catch {
+        // try next mirror
+      }
+    }
+
+    if (!data) {
+      throw new Error('All Overpass mirrors failed');
+    }
 
     const mosques = data.elements
       .map((el) => {
