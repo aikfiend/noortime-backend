@@ -2,8 +2,10 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import session from 'express-session';
-import passport from 'passport';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const session = require('express-session') as typeof import('express-session');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const passport = require('passport') as typeof import('passport');
 import { AppModule } from './app.module';
 
 async function bootstrap() {
