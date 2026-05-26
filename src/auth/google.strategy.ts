@@ -12,6 +12,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: `${process.env.BACKEND_URL}/api/auth/google/callback`,
       scope: ['profile', 'email'],
+      // Hint Google's account picker to show only the allowed domain
+      hd: process.env.ALLOWED_EMAIL_DOMAIN,
     });
   }
 
